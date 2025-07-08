@@ -38,6 +38,7 @@
             },
             "visible": true,
             "shape": "actor",
+            "zIndex": 1,
             "ports": {
               "groups": {
                 "top": {
@@ -121,7 +122,6 @@
               ]
             },
             "id": "3a5436d6-4726-4a35-a817-08be0fc4b929",
-            "zIndex": 1,
             "data": {
               "type": "tm.Actor",
               "name": "Patient",
@@ -155,6 +155,7 @@
             },
             "visible": true,
             "shape": "actor",
+            "zIndex": 2,
             "ports": {
               "groups": {
                 "top": {
@@ -238,7 +239,6 @@
               ]
             },
             "id": "d48e08d7-6a10-416a-931f-72518473a5f7",
-            "zIndex": 2,
             "data": {
               "type": "tm.Actor",
               "name": "Provider",
@@ -272,6 +272,7 @@
             },
             "visible": true,
             "shape": "actor",
+            "zIndex": 3,
             "ports": {
               "groups": {
                 "top": {
@@ -355,7 +356,6 @@
               ]
             },
             "id": "6964f537-9bc4-4a07-b5de-e43716445043",
-            "zIndex": 3,
             "data": {
               "type": "tm.Actor",
               "name": "Partner",
@@ -392,6 +392,7 @@
             },
             "visible": true,
             "shape": "store",
+            "zIndex": 4,
             "ports": {
               "groups": {
                 "top": {
@@ -475,7 +476,6 @@
               ]
             },
             "id": "2a1fe401-e86e-4432-85cf-7064a7966981",
-            "zIndex": 4,
             "data": {
               "type": "tm.Store",
               "name": "Phone storage",
@@ -516,6 +516,7 @@
             },
             "visible": true,
             "shape": "store",
+            "zIndex": 5,
             "ports": {
               "groups": {
                 "top": {
@@ -599,7 +600,6 @@
               ]
             },
             "id": "bd460cd5-9d71-4180-a5de-f5101e931467",
-            "zIndex": 5,
             "data": {
               "type": "tm.Store",
               "name": "Sensor memory",
@@ -640,6 +640,7 @@
             },
             "visible": true,
             "shape": "store",
+            "zIndex": 6,
             "ports": {
               "groups": {
                 "top": {
@@ -723,7 +724,6 @@
               ]
             },
             "id": "c13289ec-c1cc-4ba6-bb17-7af282e2f7ae",
-            "zIndex": 6,
             "data": {
               "type": "tm.Store",
               "name": "Cloud storage",
@@ -738,13 +738,6 @@
               "storesCredentials": false,
               "storesInventory": false,
               "threats": []
-            },
-            "tools": {
-              "items": [
-                "boundary",
-                "button-remove"
-              ],
-              "name": null
             }
           },
           {
@@ -771,6 +764,7 @@
             },
             "visible": true,
             "shape": "store",
+            "zIndex": 7,
             "ports": {
               "groups": {
                 "top": {
@@ -854,7 +848,6 @@
               ]
             },
             "id": "a7bd5ade-4f72-4676-af5c-e16c92f46cab",
-            "zIndex": 7,
             "data": {
               "type": "tm.Store",
               "name": "Database",
@@ -892,6 +885,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 8,
             "ports": {
               "groups": {
                 "top": {
@@ -975,7 +969,6 @@
               ]
             },
             "id": "bda331af-3336-4116-a886-bdf9237e4ae6",
-            "zIndex": 8,
             "data": {
               "type": "tm.Process",
               "name": "Arta monitor",
@@ -1012,6 +1005,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 9,
             "ports": {
               "groups": {
                 "top": {
@@ -1095,7 +1089,6 @@
               ]
             },
             "id": "6eda75ea-a83e-466e-9c5a-fd071db32cdf",
-            "zIndex": 9,
             "data": {
               "type": "tm.Process",
               "name": "Arta app",
@@ -1132,6 +1125,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 10,
             "ports": {
               "groups": {
                 "top": {
@@ -1215,7 +1209,6 @@
               ]
             },
             "id": "d3afc314-d88f-4668-a516-58abde502b8c",
-            "zIndex": 10,
             "data": {
               "type": "tm.Process",
               "name": "Arta portal",
@@ -1446,61 +1439,6 @@
             "labels": [
               "Data Flow"
             ],
-            "id": "c2c7dce1-1151-4a0f-bec9-8c9e8fec3ecf",
-            "source": {
-              "cell": "186715a4-5a4a-4586-8010-26630bc93e68",
-              "port": "1e737f43-d7d3-43db-8faf-bba9bc09e07e"
-            },
-            "target": {
-              "cell": "c13289ec-c1cc-4ba6-bb17-7af282e2f7ae",
-              "port": "c89c18a8-4252-49c3-a40f-a6229cae56df"
-            },
-            "vertices": [
-              {
-                "x": 450,
-                "y": 800
-              },
-              {
-                "x": 500,
-                "y": 800
-              }
-            ]
-          },
-          {
-            "shape": "flow",
-            "attrs": {
-              "line": {
-                "stroke": "#333333",
-                "targetMarker": {
-                  "name": "block"
-                },
-                "sourceMarker": {
-                  "name": ""
-                },
-                "strokeDasharray": null
-              }
-            },
-            "width": 200,
-            "height": 100,
-            "zIndex": 10,
-            "connector": "smooth",
-            "data": {
-              "type": "tm.Flow",
-              "name": "Data Flow",
-              "description": "",
-              "outOfScope": false,
-              "isTrustBoundary": false,
-              "reasonOutOfScope": "",
-              "hasOpenThreats": false,
-              "isBidirectional": false,
-              "isEncrypted": false,
-              "isPublicNetwork": false,
-              "protocol": "",
-              "threats": []
-            },
-            "labels": [
-              "Data Flow"
-            ],
             "id": "70b82d26-d90c-4462-8a03-28fdd1c9f41f",
             "source": {
               "cell": "d3afc314-d88f-4668-a516-58abde502b8c",
@@ -1651,6 +1589,52 @@
             "vertices": []
           },
           {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Data Flow",
+              "description": "",
+              "outOfScope": false,
+              "isTrustBoundary": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": []
+            },
+            "labels": [
+              "Data Flow"
+            ],
+            "id": "41770b9b-d36d-4b2f-b3b1-f56e7c1303c6",
+            "source": {
+              "cell": "186715a4-5a4a-4586-8010-26630bc93e68",
+              "port": "1e737f43-d7d3-43db-8faf-bba9bc09e07e"
+            },
+            "target": {
+              "cell": "c13289ec-c1cc-4ba6-bb17-7af282e2f7ae",
+              "port": "c89c18a8-4252-49c3-a40f-a6229cae56df"
+            },
+            "vertices": []
+          },
+          {
             "position": {
               "x": 280,
               "y": 547
@@ -1671,6 +1655,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 11,
             "ports": {
               "groups": {
                 "top": {
@@ -1754,7 +1739,6 @@
               ]
             },
             "id": "186715a4-5a4a-4586-8010-26630bc93e68",
-            "zIndex": 11,
             "data": {
               "type": "tm.Process",
               "name": "Arta cloud server",
