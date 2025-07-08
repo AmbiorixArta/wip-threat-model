@@ -1,16 +1,2864 @@
 {
-  "version": "2.4.1",
+  "version": "2.4.1"
   "summary": {
     "title": "Arta Threat Model",
-    "owner": "Peter",
-    "description": "",
+    "owner": "Medical Device Team",
+    "description": "Threat model for Arta with mobile app, cloud infrastructure, web portal, and firmware updates, aligned with MITRE Playbook, FDA ISO 14971, and FDA Cybersecurity Guidance.",
     "id": 0
   },
   "detail": {
-    "contributors": [],
-    "diagrams": [],
-    "diagramTop": 0,
-    "reviewer": "",
-    "threatTop": 0
+    "contributors": [
+      {
+        "name": "Regulatory Team"
+      },
+      {
+        "name": "Engineering Team"
+      }
+    ],
+    "diagrams": [
+      {
+        "version": "2.1",
+        "title": "Arta System Threat Model",
+        "thumbnail": "./public/content/images/thumbnail.stride.jpg",
+        "diagramType": "STRIDE",
+        "id": 0,
+        "cells": [
+          {
+            "position": {
+              "x": -300,
+              "y": 130
+            },
+            "size": {
+              "width": 160,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "Patient"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "actor",
+            "zIndex": 1,
+            "id": "patient_actor",
+            "data": {
+              "name": "Patient",
+              "description": "Patient using the BLE sensor and mobile app",
+              "type": "tm.Actor",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [],
+              "hasOpenThreats": false,
+              "providesAuthentication": false
+            }
+          },
+          {
+            "position": {
+              "x": -280,
+              "y": 290
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "BLE Sensor"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 2,
+            "id": "ble_sensor",
+            "data": {
+              "name": "BLE Sensor",
+              "description": "Collects 256 ECG samples/second, sends 5 frames/second to Mobile App",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Tampering: ECG Data",
+                  "type": "Tampering",
+                  "description": "Attacker alters ECG data during BLE transmission, leading to incorrect patient data.",
+                  "mitigation": "Use AES-128 encryption for BLE, implement CRC checks, enforce secure boot per FDA guidelines, and validate data integrity with HMAC-SHA256 (MITRE ATT&CK T1471).",
+                  "modelType": "STRIDE",
+                  "id": "ble_tamper_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Critical",
+                  "title": "Elevation of Privilege: Firmware Access",
+                  "type": "Elevation of privilege",
+                  "description": "Attacker gains unauthorized access to BLE sensor firmware.",
+                  "mitigation": "Implemented secure boot with cryptographic verification (ECDSA), restricted firmware access to authenticated devices using mutual TLS, and audited firmware update logs per FDA guidelines (ASVS v5.0.0-10.3.1, MITRE ATT&CK T1542).",
+                  "modelType": "STRIDE",
+                  "id": "ble_elevation_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Denial of Service: Sensor Overload",
+                  "type": "Denial of service",
+                  "description": "Attacker floods sensor with invalid commands, disrupting ECG collection.",
+                  "mitigation": "Implement rate limiting on BLE commands, validate command authenticity with signed payloads, and monitor for anomalies (ASVS v5.0.0-1.14.1, MITRE ATT&CK T1498).",
+                  "modelType": "STRIDE",
+                  "id": "ble_dos_1"
+                }
+              ],
+              "hasOpenThreats": false,
+              "isWebApplication": null
+            }
+          },
+          {
+            "position": {
+              "x": 30,
+              "y": 130
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "Mobile App"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 3,
+            "id": "mobile_app",
+            "data": {
+              "name": "Mobile App",
+              "description": "Flutter app with Cognito MFA, stores ECG data in SQLite, sends to Kinesis",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Critical",
+                  "title": "Patient ID Mix-Up",
+                  "type": "Tampering",
+                  "description": "Incorrect patient ID association in app, causing data mix-up across patients.",
+                  "mitigation": "Implemented UUID validation at data tagging and transmission, enforced integrity checks with HMAC-SHA256, and added audit logging for patient ID assignments (ASVS v5.0.0-5.3.1, FDA ISO 14971).",
+                  "modelType": "STRIDE",
+                  "id": "mobile_id_mixup"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Spoofing: User Authentication",
+                  "type": "Spoofing",
+                  "description": "Attacker spoofs patient identity via weak MFA.",
+                  "mitigation": "Enforce strong MFA in Cognito (TOTP or SMS), use short-lived tokens, implement account lockout after 5 failed attempts, and monitor authentication logs (ASVS v5.0.0-2.7.1, MITRE ATT&CK T1078).",
+                  "modelType": "STRIDE",
+                  "id": "mobile_spoof_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Repudiation: Data Transmission",
+                  "type": "Repudiation",
+                  "description": "Patient denies sending incorrect ECG data to Kinesis.",
+                  "mitigation": "Log all data transmissions with timestamps and patient IDs, use signed payloads with ECDSA, and store logs in immutable storage (ASVS v5.0.0-9.2.1, FDA guidelines).",
+                  "modelType": "STRIDE",
+                  "id": "mobile_reputation_1"
+                }
+              ],
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 50,
+              "y": 300
+            },
+            "size": {
+              "width": 160,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "SQLite DB"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 4,
+            "id": "sqlite_db",
+            "data": {
+              "name": "SQLite DB",
+              "description": "Encrypted local storage for ECG data",
+              "type": "tm.Store",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Information Disclosure: Local Data",
+                  "type": "Information disclosure",
+                  "description": "Attacker accesses unencrypted SQLite data on compromised device.",
+                  "mitigation": "Use AES-256 encryption for SQLite data at rest, secure key storage with device-specific keys per FDA guidelines, and implement secure enclave for key management (ASVS v5.0.0-6.2.1).",
+                  "modelType": "STRIDE",
+                  "id": "sqlite_disclosure_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Tampering: Local Data",
+                  "type": "Tampering",
+                  "description": "Attacker modifies SQLite data on device.",
+                  "mitigation": "Implement integrity checks with HMAC-SHA256, restrict DB access to app via sandboxing, and monitor for unauthorized access attempts (ASVS v5.0.0-6.1.1).",
+                  "modelType": "STRIDE",
+                  "id": "sqlite_tamper_1"
+                }
+              ],
+              "hasOpenThreats": false,
+              "isALog": false,
+              "storesCredentials": false,
+              "isEncrypted": true,
+              "isSigned": false
+            }
+          },
+          {
+            "position": {
+              "x": 540,
+              "y": 410
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "AWS Cognito"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 5,
+            "id": "cognito",
+            "data": {
+              "name": "AWS Cognito",
+              "description": "Handles MFA authentication for patients, physicians, and partners",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Spoofing: Token Issuance",
+                  "type": "Spoofing",
+                  "description": "Attacker obtains unauthorized Cognito tokens.",
+                  "mitigation": "Use strong MFA (TOTP), short-lived tokens (1-hour expiry), monitor token issuance logs with CloudTrail, and enforce least privilege IAM roles (ASVS v5.0.0-2.1.1, FDA guidelines, MITRE ATT&CK T1078).",
+                  "modelType": "STRIDE",
+                  "id": "cognito_spoof_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Denial of Service: Authentication Flood",
+                  "type": "Denial of service",
+                  "description": "Attacker floods Cognito with login attempts, locking out users.",
+                  "mitigation": "Implement rate limiting, account lockout policies after 5 failed attempts, and CAPTCHA with AWS WAF (ASVS v5.0.0-1.14.1, MITRE ATT&CK T1498).",
+                  "modelType": "STRIDE",
+                  "id": "cognito_dos_1"
+                }
+              ],
+              "hasOpenThreats": false,
+              "handlesCardPayment": null,
+              "handlesGoodsOrServices": null
+            }
+          },
+          {
+            "position": {
+              "x": 600,
+              "y": -70
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "AWS Kinesis"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 6,
+            "id": "kinesis",
+            "data": {
+              "name": "AWS Kinesis",
+              "description": "Streams ECG data, consumed by Lambda every 10 seconds",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Denial of Service: Stream Overload",
+                  "type": "Denial of service",
+                  "description": "Overloaded Kinesis stream disrupts ECG data processing.",
+                  "mitigation": "Configure auto-scaling, implement retry mechanisms with exponential backoff, and use dead-letter queues with SQS (ASVS v5.0.0-9.1.1, MITRE ATT&CK T1498).",
+                  "modelType": "STRIDE",
+                  "id": "kinesis_dos_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Information Disclosure: Stream Data",
+                  "type": "Information disclosure",
+                  "description": "Unauthorized access to Kinesis stream exposes ECG data.",
+                  "mitigation": "Use least privilege IAM roles, encrypt data in transit with TLS 1.3, and enable server-side encryption with AWS KMS (ASVS v5.0.0-8.2.1, FDA guidelines, MITRE ATT&CK T1040).",
+                  "modelType": "STRIDE",
+                  "id": "kinesis_disclosure_1"
+                }
+              ],
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 730,
+              "y": -200
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "AWS Lambda"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 7,
+            "id": "lambda",
+            "data": {
+              "name": "AWS Lambda",
+              "description": "Decodes Kinesis data, writes to Timescale DB",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Denial of Service: Failed Records",
+                  "type": "Denial of service",
+                  "description": "Failed Lambda executions disrupt data processing.",
+                  "mitigation": "Implement retry mechanism with exponential backoff, use SQS DLQ for failed records, and monitor Lambda metrics with CloudWatch (ASVS v5.0.0-9.1.1, MITRE ATT&CK T1498).",
+                  "modelType": "STRIDE",
+                  "id": "lambda_dos_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Elevation of Privilege: Lambda Execution",
+                  "type": "Elevation of privilege",
+                  "description": "Attacker escalates privileges to modify Lambda execution.",
+                  "mitigation": "Enforce least privilege IAM roles, restrict Lambda execution to authorized sources with VPC endpoints, and audit IAM actions with CloudTrail (ASVS v5.0.0-4.1.1, FDA guidelines, MITRE ATT&CK T1548).",
+                  "modelType": "STRIDE",
+                  "id": "lambda_elevation_1"
+                }
+              ],
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 810,
+              "y": 330
+            },
+            "size": {
+              "width": 160,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "Timescale DB"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 8,
+            "id": "timescale_db",
+            "data": {
+              "name": "Timescale DB",
+              "description": "Stores ECG data, queried by Node.js API",
+              "type": "tm.Store",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Critical",
+                  "title": "Information Disclosure: PHI",
+                  "type": "Information disclosure",
+                  "description": "Unauthorized access exposes PHI for all patients.",
+                  "mitigation": "Use TLS encryption, role-based access control with fine-grained permissions, VPC peering, and audit logging with CloudTrail per FDA guidelines (ASVS v5.0.0-6.2.1, MITRE ATT&CK T1005).",
+                  "modelType": "STRIDE",
+                  "id": "timescale_disclosure_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Critical",
+                  "title": "Patient ID Mix-Up",
+                  "type": "Tampering",
+                  "description": "Incorrect patient ID in DB causes data mix-up.",
+                  "mitigation": "Implemented UUID validation during data ingestion, enforced integrity checks with HMAC-SHA256, and added audit logging for data writes (ASVS v5.0.0-5.3.1, FDA ISO 14971).",
+                  "modelType": "STRIDE",
+                  "id": "timescale_id_mixup"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Repudiation: Data Access",
+                  "type": "Repudiation",
+                  "description": "Unauthorized data access is not traceable.",
+                  "mitigation": "Implement audit logging for all DB queries with CloudTrail, store logs in immutable S3 bucket, and enable versioning (ASVS v5.0.0-9.2.1, FDA guidelines).",
+                  "modelType": "STRIDE",
+                  "id": "timescale_reputation_1"
+                }
+              ],
+              "hasOpenThreats": false,
+              "isALog": false,
+              "storesCredentials": false,
+              "isEncrypted": true,
+              "isSigned": false
+            }
+          },
+          {
+            "position": {
+              "x": 830,
+              "y": -200
+            },
+            "size": {
+              "width": 160,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "SQS DLQ"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 9,
+            "id": "sqs_dlq",
+            "data": {
+              "name": "SQS DLQ",
+              "description": "Stores failed Lambda records",
+              "type": "tm.Store",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Information Disclosure: Failed Records",
+                  "type": "Information disclosure",
+                  "description": "Unauthorized access to SQS DLQ exposes failed ECG records.",
+                  "mitigation": "Encrypt SQS messages with AWS KMS, restrict access with least privilege IAM roles, and enable server-side encryption (ASVS v5.0.0-6.2.1, MITRE ATT&CK T1005).",
+                  "modelType": "STRIDE",
+                  "id": "sqs_disclosure_1"
+                }
+              ],
+              "hasOpenThreats": false,
+              "isALog": false,
+              "storesCredentials": false,
+              "isEncrypted": true,
+              "isSigned": false
+            }
+          },
+          {
+            "position": {
+              "x": 930,
+              "y": -170
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "AWS WAF"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 10,
+            "id": "waf",
+            "data": {
+              "name": "AWS WAF",
+              "description": "Protects ALB from malicious requests",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Denial of Service: API Attacks",
+                  "type": "Denial of service",
+                  "description": "Attacker floods ALB with malicious requests.",
+                  "mitigation": "Use AWS WAF rules for rate limiting, SQL injection, and XSS protection, and monitor traffic with CloudWatch per FDA cybersecurity guidelines (ASVS v5.0.0-1.14.1, MITRE ATT&CK T1498).",
+                  "modelType": "STRIDE",
+                  "id": "waf_dos_1"
+                }
+              ],
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 1130,
+              "y": -200
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "ALB"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 11,
+            "id": "alb",
+            "data": {
+              "name": "ALB",
+              "description": "Load balancer for Node.js API",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Denial of Service: ALB Overload",
+                  "type": "Denial of service",
+                  "description": "Attacker overloads ALB with requests, disrupting API access.",
+                  "mitigation": "Configure ALB auto-scaling, integrate WAF rate limiting, and monitor with CloudWatch (ASVS v5.0.0-1.14.1, MITRE ATT&CK T1498).",
+                  "modelType": "STRIDE",
+                  "id": "alb_dos_1"
+                }
+              ],
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 1080,
+              "y": 350
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "Node.js API"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 12,
+            "id": "nodejs_api",
+            "data": {
+              "name": "Node.js API",
+              "description": "REST API hosted on ECS with ALB, queries Timescale DB",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Elevation of Privilege: External Partner",
+                  "type": "Elevation of privilege",
+                  "description": "External partner escalates privileges to access unauthorized data.",
+                  "mitigation": "Implemented least privilege IAM roles, Aikido Zen rate limiting, RBAC via Cognito token claims, and audited API access with CloudTrail per FDA guidelines (ASVS v5.0.0-4.1.3, MITRE ATT&CK T1548).",
+                  "modelType": "STRIDE",
+                  "id": "api_elevation_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Spoofing: Invalid Token",
+                  "type": "Spoofing",
+                  "description": "Attacker uses invalid or stolen Cognito token to access API.",
+                  "mitigation": "Verify tokens with aws-jwt-verify, enforce RBAC with fine-grained permissions, and log invalid attempts with CloudWatch (ASVS v5.0.0-13.2.1, MITRE ATT&CK T1078).",
+                  "modelType": "STRIDE",
+                  "id": "api_spoof_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Injection: SQL Query",
+                  "type": "Tampering",
+                  "description": "Attacker injects malicious SQL queries via API.",
+                  "mitigation": "Use parameterized queries, input validation, and sanitization with OWASP Secure Coding Practices (ASVS v5.0.0-5.1.1, MITRE ATT&CK T1190).",
+                  "modelType": "STRIDE",
+                  "id": "api_injection_1"
+                }
+              ],
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 1630,
+              "y": -60
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "Web Portal"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 13,
+            "id": "web_portal",
+            "data": {
+              "name": "Web Portal",
+              "description": "React SPA hosted on S3 with CloudFront",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Spoofing: Physician Authentication",
+                  "type": "Spoofing",
+                  "description": "Attacker spoofs physician identity via weak MFA.",
+                  "mitigation": "Enforce strong MFA in Cognito (TOTP), use short-lived tokens (1-hour expiry), and monitor login attempts with CloudTrail (ASVS v5.0.0-2.7.1, FDA guidelines, MITRE ATT&CK T1078).",
+                  "modelType": "STRIDE",
+                  "id": "portal_spoof_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "XSS: Client-Side Attacks",
+                  "type": "Tampering",
+                  "description": "Attacker injects malicious scripts into React portal.",
+                  "mitigation": "Use Content Security Policy (CSP), sanitize inputs with DOMPurify, and use secure React libraries (ASVS v5.0.0-5.1.3, MITRE ATT&CK T1189).",
+                  "modelType": "STRIDE",
+                  "id": "portal_xss_1"
+                }
+              ],
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 1630,
+              "y": 110
+            },
+            "size": {
+              "width": 160,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "Physician"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "actor",
+            "zIndex": 14,
+            "id": "physician_actor",
+            "data": {
+              "name": "Physician",
+              "description": "Physician accessing ECG data via Web Portal",
+              "type": "tm.Actor",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [],
+              "hasOpenThreats": false,
+              "providesAuthentication": false
+            }
+          },
+          {
+            "position": {
+              "x": 1350,
+              "y": 620
+            },
+            "size": {
+              "width": 160,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "External Partner"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "actor",
+            "zIndex": 15,
+            "id": "external_partner",
+            "data": {
+              "name": "External Partner",
+              "description": "Third-party accessing ECG data via API",
+              "type": "tm.Actor",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [],
+              "hasOpenThreats": false,
+              "providesAuthentication": false
+            }
+          },
+          {
+            "position": {
+              "x": 1000,
+              "y": 550
+            },
+            "size": {
+              "width": 160,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "MongoDB Atlas"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 16,
+            "id": "mongodb",
+            "data": {
+              "name": "MongoDB Atlas",
+              "description": "Stores firmware version metadata",
+              "type": "tm.Store",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Information Disclosure: Firmware Metadata",
+                  "type": "Information disclosure",
+                  "description": "Unauthorized access to MongoDB exposes firmware metadata.",
+                  "mitigation": "Use TLS encryption, least privilege IAM roles, audit logging with CloudTrail, and enable server-side encryption with AWS KMS (ASVS v5.0.0-6.2.1, MITRE ATT&CK T1005).",
+                  "modelType": "STRIDE",
+                  "id": "mongodb_disclosure_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Tampering: Firmware Metadata",
+                  "type": "Tampering",
+                  "description": "Attacker modifies firmware metadata, directing app to incorrect firmware.",
+                  "mitigation": "Implement integrity checks with HMAC-SHA256, restrict write access to authorized roles, and monitor write operations with CloudTrail (ASVS v5.0.0-6.1.1, MITRE ATT&CK T1565).",
+                  "modelType": "STRIDE",
+                  "id": "mongodb_tamper_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Denial of Service: MongoDB Overload",
+                  "type": "Denial of service",
+                  "description": "Attacker floods MongoDB with queries, disrupting firmware updates.",
+                  "mitigation": "Implement rate limiting, use auto-scaling, and monitor query performance with CloudWatch (ASVS v5.0.0-1.14.1, MITRE ATT&CK T1498).",
+                  "modelType": "STRIDE",
+                  "id": "mongodb_dos_1"
+                }
+              ],
+              "hasOpenThreats": false,
+              "isALog": false,
+              "storesCredentials": false,
+              "isEncrypted": true,
+              "isSigned": false
+            }
+          },
+          {
+            "position": {
+              "x": 800,
+              "y": 510
+            },
+            "size": {
+              "width": 160,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "S3 (Firmware)"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 17,
+            "id": "s3_firmware",
+            "data": {
+              "name": "S3 (Firmware)",
+              "description": "Stores firmware files for sensor updates",
+              "type": "tm.Store",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Tampering: Firmware Files",
+                  "type": "Tampering",
+                  "description": "Attacker uploads corrupted firmware to S3, causing sensor malfunction.",
+                  "mitigation": "Implemented SHA-256 hash checks for firmware integrity, restricted S3 write access with least privilege IAM policies, enforced server-side encryption with AWS KMS, and audited uploads with CloudTrail (ASVS v5.0.0-10.3.1, FDA guidelines, MITRE ATT&CK T1565).",
+                  "modelType": "STRIDE",
+                  "id": "s3_tamper_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Information Disclosure: Firmware Files",
+                  "type": "Information disclosure",
+                  "description": "Unauthorized access to S3 bucket exposes firmware files.",
+                  "mitigation": "Use least privilege IAM roles, enable server-side encryption with AWS KMS, restrict public access, and monitor access with CloudTrail (ASVS v5.0.0-6.2.1, MITRE ATT&CK T1005).",
+                  "modelType": "STRIDE",
+                  "id": "s3_disclosure_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Repudiation: Firmware Upload",
+                  "type": "Repudiation",
+                  "description": "Unauthorized firmware upload is not traceable.",
+                  "mitigation": "Enable S3 access logging, use signed URLs for uploads, audit IAM actions with CloudTrail, and enable versioning (ASVS v5.0.0-9.2.1, FDA guidelines).",
+                  "modelType": "STRIDE",
+                  "id": "s3_reputation_1"
+                }
+              ],
+              "hasOpenThreats": false,
+              "isALog": false,
+              "storesCredentials": false,
+              "isEncrypted": true,
+              "isSigned": false
+            }
+          },
+          {
+            "position": {
+              "x": 1500,
+              "y": -200
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "CloudFront"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 18,
+            "id": "cloudfront",
+            "data": {
+              "name": "CloudFront",
+              "description": "Distributes React SPA from S3",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Denial of Service: CDN Overload",
+                  "type": "Denial of service",
+                  "description": "Attacker floods CloudFront with requests, disrupting portal access.",
+                  "mitigation": "Configure CloudFront with AWS WAF, enable caching, use rate limiting, and monitor with CloudWatch (ASVS v5.0.0-1.14.1, MITRE ATT&CK T1498).",
+                  "modelType": "STRIDE",
+                  "id": "cloudfront_dos_1"
+                }
+              ],
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 750,
+              "y": -340
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "ElastiCache"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 19,
+            "id": "elasticache",
+            "data": {
+              "name": "ElastiCache (Redis)",
+              "description": "Caches data for API performance",
+              "type": "tm.Store",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Information Disclosure: Cache Data",
+                  "type": "Information disclosure",
+                  "description": "Unauthorized access to Redis cache.",
+                  "mitigation": "No specific mitigation defined.",
+                  "modelType": "STRIDE",
+                  "id": "elasticache_disclosure_1"
+                }
+              ],
+              "hasOpenThreats": true,
+              "isALog": false,
+              "storesCredentials": false,
+              "isEncrypted": true,
+              "isSigned": false
+            }
+          },
+          {
+            "position": {
+              "x": 900,
+              "y": -340
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "SES"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 20,
+            "id": "ses",
+            "data": {
+              "name": "SES (Email Service)",
+              "description": "Handles email notifications",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Spoofing: Unauthorized Email",
+                  "type": "Spoofing",
+                  "description": "Unauthorized email sending.",
+                  "mitigation": "No specific mitigation defined.",
+                  "modelType": "STRIDE",
+                  "id": "ses_spoof_1"
+                }
+              ],
+              "hasOpenThreats": true
+            }
+          },
+          {
+            "position": {
+              "x": 1100,
+              "y": 450
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "EC2 Auto Scaling"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 21,
+            "id": "ec2_auto_scaling",
+            "data": {
+              "name": "EC2 Auto Scaling Group",
+              "description": "Hosts Node.js API containers",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Elevation of Privilege: EC2 Access",
+                  "type": "Elevation of privilege",
+                  "description": "Unauthorized access to EC2 instances.",
+                  "mitigation": "No specific mitigation defined.",
+                  "modelType": "STRIDE",
+                  "id": "ec2_elevation_1"
+                }
+              ],
+              "hasOpenThreats": true
+            }
+          },
+          {
+            "position": {
+              "x": 1200,
+              "y": 250
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "NAT Gateway"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "zIndex": 22,
+            "id": "nat_gateway",
+            "data": {
+              "name": "NAT Gateway",
+              "description": "Handles outbound traffic from private subnets",
+              "type": "tm.Process",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Spoofing: Outbound Traffic",
+                  "type": "Spoofing",
+                  "description": "Unauthorized outbound traffic.",
+                  "mitigation": "No specific mitigation defined.",
+                  "modelType": "STRIDE",
+                  "id": "nat_spoof_1"
+                }
+              ],
+              "hasOpenThreats": true
+            }
+          },
+          {
+            "position": {
+              "x": 700,
+              "y": -100
+            },
+            "size": {
+              "width": 160,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "CloudWatch"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 2.5,
+                "strokeDasharray": null
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "zIndex": 23,
+            "id": "cloudwatch",
+            "data": {
+              "name": "CloudWatch (Logs & Metrics)",
+              "description": "Monitors logs and metrics for AWS services",
+              "type": "tm.Store",
+              "isTrustBoundary": false,
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Information Disclosure: Logs",
+                  "type": "Information disclosure",
+                  "description": "Unauthorized access to logs.",
+                  "mitigation": "No specific mitigation defined.",
+                  "modelType": "STRIDE",
+                  "id": "cloudwatch_disclosure_1"
+                }
+              ],
+              "hasOpenThreats": true,
+              "isALog": true,
+              "storesCredentials": false,
+              "isEncrypted": true,
+              "isSigned": false
+            }
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "attrs": {
+              "line": {
+                "targetMarker": "",
+                "sourceMarker": ""
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 24,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Mobile Device",
+              "description": "Trust boundary for mobile app and sensor",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "mobile_boundary",
+            "labels": [
+              {
+                "attrs": {
+                  "text": {
+                    "text": "Mobile Device"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "x": 250,
+              "y": 0
+            },
+            "target": {
+              "x": 300,
+              "y": 660
+            },
+            "vertices": [
+              {
+                "x": 375,
+                "y": 150
+              },
+              {
+                "x": 330,
+                "y": 570
+              }
+            ]
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "attrs": {
+              "line": {
+                "targetMarker": "",
+                "sourceMarker": ""
+              }
+            },
+            "width": 400,
+            "height": 400,
+            "zIndex": 25,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "AWS Cloud",
+              "description": "Trust boundary for AWS infrastructure",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "aws_boundary",
+            "labels": [
+              {
+                "attrs": {
+                  "text": {
+                    "text": "AWS Cloud"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "x": 550,
+              "y": -400
+            },
+            "target": {
+              "x": 740,
+              "y": 560
+            },
+            "vertices": [
+              {
+                "x": 470,
+                "y": -200
+              },
+              {
+                "x": 450,
+                "y": 270
+              },
+              {
+                "x": 450,
+                "y": 350
+              },
+              {
+                "x": 520,
+                "y": 530
+              }
+            ]
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "attrs": {
+              "line": {
+                "targetMarker": "",
+                "sourceMarker": ""
+              }
+            },
+            "width": 400,
+            "height": 300,
+            "zIndex": 26,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Public Subnets",
+              "description": "Trust boundary for public-facing AWS services",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "public_subnets",
+            "labels": [
+              {
+                "attrs": {
+                  "text": {
+                    "text": "Public Subnets"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "x": 900,
+              "y": -300
+            },
+            "target": {
+              "x": 1300,
+              "y": 0
+            },
+            "vertices": [
+              {
+                "x": 1000,
+                "y": -250
+              },
+              {
+                "x": 1100,
+                "y": -200
+              }
+            ]
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "attrs": {
+              "line": {
+                "targetMarker": "",
+                "sourceMarker": ""
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 27,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Private Subnets",
+              "description": "Trust boundary for private AWS services",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "private_subnets",
+            "labels": [
+              {
+                "attrs": {
+                  "text": {
+                    "text": "Private Subnets"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "x": 800,
+              "y": 300
+            },
+            "target": {
+              "x": 1100,
+              "y": 600
+            },
+            "vertices": [
+              {
+                "x": 900,
+                "y": 400
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 28,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Patient Login (HTTPS)",
+              "description": "Patient authentication with Cognito",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Spoofing: Patient Login",
+                  "type": "Spoofing",
+                  "description": "Attacker spoofs patient identity during login.",
+                  "mitigation": "Use AWS Cognito MFA (TOTP), enforce strong passwords (minimum 12 characters, mixed case), and monitor login attempts with CloudTrail per FDA guidelines (ASVS v5.0.0-2.7.1, MITRE ATT&CK T1078).",
+                  "modelType": "STRIDE",
+                  "id": "patient_spoof_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_patient_auth",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Patient Login (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "patient_actor"
+            },
+            "target": {
+              "cell": "cognito"
+            },
+            "vertices": [
+              {
+                "x": 160,
+                "y": 465
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 29,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Cognito Token (HTTPS)",
+              "description": "Token issuance to Mobile App",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [],
+              "isTrustBoundary": false
+            },
+            "id": "flow_token_mobile",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Cognito Token (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "cognito"
+            },
+            "target": {
+              "cell": "mobile_app"
+            },
+            "vertices": [
+              {
+                "x": 475,
+                "y": 75
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 30,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Start Streaming (BLE)",
+              "description": "Command to start ECG data collection",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "BLE",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "title": "Spoofing: Start Command",
+                  "type": "Spoofing",
+                  "description": "Attacker sends unauthorized start streaming command.",
+                  "mitigation": "Authenticate BLE connection with secure pairing, use AES-128 encrypted commands, and verify device identity with ECDSA signatures (ASVS v5.0.0-8.2.1, MITRE ATT&CK T1078).",
+                  "modelType": "STRIDE",
+                  "id": "ble_spoof_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_start_stream",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Start Streaming (BLE)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "mobile_app"
+            },
+            "target": {
+              "cell": "ble_sensor"
+            },
+            "vertices": [
+              {
+                "x": 10,
+                "y": 230
+              },
+              {
+                "x": -30,
+                "y": 260
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 31,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "ECG Data (BLE)",
+              "description": "ECG data from sensor to app",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "BLE",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Information Disclosure: BLE",
+                  "type": "Information disclosure",
+                  "description": "Attacker intercepts BLE data, exposing ECG samples.",
+                  "mitigation": "Use AES-128 encryption for BLE communication, enforce secure pairing with mutual authentication, and monitor for unauthorized connections (ASVS v5.0.0-8.2.1, MITRE ATT&CK T1040).",
+                  "modelType": "STRIDE",
+                  "id": "ble_disclosure_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_ble",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "ECG Data (BLE)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "ble_sensor"
+            },
+            "target": {
+              "cell": "mobile_app"
+            },
+            "vertices": [
+              {
+                "x": -20,
+                "y": 210
+              },
+              {
+                "x": 20,
+                "y": 180
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 32,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "ECG Data (Local)",
+              "description": "ECG data stored in SQLite",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [],
+              "isTrustBoundary": false
+            },
+            "id": "flow_sqlite",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "ECG Data (Local)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "mobile_app"
+            },
+            "target": {
+              "cell": "sqlite_db"
+            },
+            "vertices": [
+              {
+                "x": 85,
+                "y": 250
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 33,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "ECG Data (HTTPS)",
+              "description": "ECG data sent to Kinesis",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Information Disclosure: HTTPS",
+                  "type": "Information disclosure",
+                  "description": "Attacker intercepts ECG data over public internet.",
+                  "mitigation": "Use TLS 1.3 for HTTPS, implement exponential backoff retries, enforce least privilege IAM roles, and monitor with CloudTrail (ASVS v5.0.0-8.2.1, FDA guidelines, MITRE ATT&CK T1040).",
+                  "modelType": "STRIDE",
+                  "id": "kinesis_disclosure_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_kinesis",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "ECG Data (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "mobile_app"
+            },
+            "target": {
+              "cell": "kinesis"
+            },
+            "vertices": [
+              {
+                "x": 430,
+                "y": -40
+              },
+              {
+                "x": 580,
+                "y": -60
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 34,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Batched ECG Data",
+              "description": "Batched data from Kinesis to Lambda",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [],
+              "isTrustBoundary": false
+            },
+            "id": "flow_lambda",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Batched ECG Data"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "kinesis"
+            },
+            "target": {
+              "cell": "lambda"
+            },
+            "vertices": [
+              {
+                "x": 760,
+                "y": 20
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 35,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Decoded ECG Data",
+              "description": "Data from Lambda to Timescale DB",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "VPC",
+              "threats": [],
+              "isTrustBoundary": false
+            },
+            "id": "flow_timescale",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Decoded ECG Data"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "lambda"
+            },
+            "target": {
+              "cell": "timescale_db"
+            },
+            "vertices": [
+              {
+                "x": 850,
+                "y": 125
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 36,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Failed Records",
+              "description": "Failed Lambda records to SQS DLQ",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "",
+              "threats": [],
+              "isTrustBoundary": false
+            },
+            "id": "flow_dlq",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Failed Records"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "lambda"
+            },
+            "target": {
+              "cell": "sqs_dlq"
+            },
+            "vertices": [
+              {
+                "x": 850,
+                "y": -200
+              },
+              {
+                "x": 890,
+                "y": -200
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 37,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Physician Login (HTTPS)",
+              "description": "Physician authentication with Cognito",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Spoofing: Physician Login",
+                  "type": "Spoofing",
+                  "description": "Attacker spoofs physician identity during login.",
+                  "mitigation": "Use AWS Cognito MFA (TOTP), enforce strong passwords (minimum 12 characters, mixed case), and monitor login attempts with CloudTrail per FDA guidelines (ASVS v5.0.0-2.7.1, MITRE ATT&CK T1078).",
+                  "modelType": "STRIDE",
+                  "id": "physician_spoof_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_physician_auth",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Physician Login (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "physician_actor"
+            },
+            "target": {
+              "cell": "cognito"
+            },
+            "vertices": [
+              {
+                "x": 1630,
+                "y": 300
+              },
+              {
+                "x": 1530,
+                "y": 400
+              },
+              {
+                "x": 1030,
+                "y": 720
+              },
+              {
+                "x": 700,
+                "y": 490
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 38,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Cognito Token (HTTPS)",
+              "description": "Token issuance to Web Portal",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [],
+              "isTrustBoundary": false
+            },
+            "id": "flow_token_web",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Cognito Token (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "cognito"
+            },
+            "target": {
+              "cell": "web_portal"
+            },
+            "vertices": [
+              {
+                "x": 790,
+                "y": 100
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 39,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Web Portal Access (HTTPS)",
+              "description": "Physician accesses React SPA via CloudFront",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Information Disclosure: Web Access",
+                  "type": "Information disclosure",
+                  "description": "Attacker intercepts web portal traffic.",
+                  "mitigation": "Use TLS 1.3 for HTTPS, configure CloudFront with secure headers (HSTS, X-Content-Type-Options), and monitor with CloudTrail (ASVS v5.0.0-8.2.1, MITRE ATT&CK T1040).",
+                  "modelType": "STRIDE",
+                  "id": "cloudfront_disclosure_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_web_access",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Web Portal Access (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "physician_actor"
+            },
+            "target": {
+              "cell": "cloudfront"
+            },
+            "vertices": [
+              {
+                "x": 1560,
+                "y": 0
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 36,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "ECG Query (HTTPS)",
+              "description": "Query from Web Portal to Node.js API via CloudFront, WAF, and ALB",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Information Disclosure: API Query",
+                  "type": "Information disclosure",
+                  "description": "Attacker intercepts API queries over public internet.",
+                  "mitigation": "Use TLS 1.3 for HTTPS, AWS WAF for additional protection, verify Cognito tokens with aws-jwt-verify, and monitor with CloudTrail (ASVS v5.0.0-13.2.1, MITRE ATT&CK T1040).",
+                  "modelType": "STRIDE",
+                  "id": "api_disclosure_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_api_query",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "ECG Query (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "web_portal"
+            },
+            "target": {
+              "cell": "waf"
+            },
+            "vertices": [
+              {
+                "x": 1290,
+                "y": -5
+              },
+              {
+                "x": 1250,
+                "y": -20
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 37,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "API Request (HTTPS)",
+              "description": "Request from ALB to Node.js API",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "HTTPS",
+              "threats": [],
+              "isTrustBoundary": false
+            },
+            "id": "flow_alb_api",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "API Request (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "waf"
+            },
+            "target": {
+              "cell": "alb"
+            },
+            "vertices": [
+              {
+                "x": 1030,
+                "y": -180
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 38,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "DB Query (HTTPS)",
+              "description": "Query from Node.js API to Timescale DB",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "HTTPS",
+              "threats": [],
+              "isTrustBoundary": false
+            },
+            "id": "flow_db_query",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "DB Query (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "nodejs_api"
+            },
+            "target": {
+              "cell": "timescale_db"
+            },
+            "vertices": [
+              {
+                "x": 1090,
+                "y": 260
+              },
+              {
+                "x": 1030,
+                "y": 280
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 39,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Partner Login (HTTPS)",
+              "description": "External partner authentication with Cognito",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Spoofing: Partner Login",
+                  "type": "Spoofing",
+                  "description": "Attacker spoofs external partner identity during login.",
+                  "mitigation": "Use AWS Cognito MFA (TOTP or API keys), enforce strong authentication with 2048-bit RSA keys, and monitor login attempts with CloudTrail per FDA guidelines (ASVS v5.0.0-2.7.1, MITRE ATT&CK T1078).",
+                  "modelType": "STRIDE",
+                  "id": "partner_spoof_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_partner_auth",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Partner Login (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "external_partner"
+            },
+            "target": {
+              "cell": "cognito"
+            },
+            "vertices": [
+              {
+                "x": 975,
+                "y": 75
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 40,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Cognito Token (HTTPS)",
+              "description": "Token issuance to External Partner",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [],
+              "isTrustBoundary": false
+            },
+            "id": "flow_token_partner",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Cognito Token (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "cognito"
+            },
+            "target": {
+              "cell": "external_partner"
+            },
+            "vertices": [
+              {
+                "x": 1100,
+                "y": 125
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 41,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Partner API Call (HTTPS)",
+              "description": "External partner API access via WAF and ALB",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Repudiation: External Partner Access",
+                  "type": "Repudiation",
+                  "description": "External partner denies unauthorized API access.",
+                  "mitigation": "Implement audit logging, signed API requests, verify tokens with aws-jwt-verify, monitor access patterns per FDA guidelines (ASVS v5.0.0-9.2.1).",
+                  "modelType": "STRIDE",
+                  "id": "partner_reputation_1"
+                },
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Information Disclosure: Partner API",
+                  "type": "Information disclosure",
+                  "description": "Attacker intercepts partner API calls, exposing ECG data.",
+                  "mitigation": "Use TLS 1.3, enforce OAuth 2.0 scopes, and validate tokens (ASVS v5.0.0-13.2.1).",
+                  "modelType": "STRIDE",
+                  "id": "partner_api_disclosure_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_partner_api",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Partner API Call (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "external_partner"
+            },
+            "target": {
+              "cell": "waf"
+            },
+            "vertices": [
+              {
+                "x": 1100,
+                "y": 125
+              },
+              {
+                "x": 1100,
+                "y": 20
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": ""
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 42,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Firmware Check (HTTPS)",
+              "description": "Mobile App checks firmware versions via Node.js API",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Information Disclosure: Firmware Check",
+                  "type": "Information disclosure",
+                  "description": "Attacker intercepts firmware version query.",
+                  "mitigation": "Use TLS 1.3 for HTTPS, verify Cognito token.",
+                  "modelType": "STRIDE",
+                  "id": "firmware_disclosure_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_firmware_check",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Firmware Check (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "mobile_app"
+            },
+            "target": {
+              "cell": "waf"
+            },
+            "vertices": [
+              {
+                "x": 410,
+                "y": -140
+              },
+              {
+                "x": 510,
+                "y": -140
+              },
+              {
+                "x": 600,
+                "y": -150
+              },
+              {
+                "x": 690,
+                "y": -100
+              },
+              {
+                "x": 870,
+                "y": -50
+              },
+              {
+                "x": 940,
+                "y": -90
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 43,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Firmware Metadata (HTTPS)",
+              "description": "Node.js API queries MongoDB for firmware metadata",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "HTTPS",
+              "threats": [],
+              "isTrustBoundary": false
+            },
+            "id": "flow_firmware_metadata",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Firmware Metadata (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "nodejs_api"
+            },
+            "target": {
+              "cell": "mongodb"
+            },
+            "vertices": [
+              {
+                "x": 1060,
+                "y": 430
+              },
+              {
+                "x": 1030,
+                "y": 430
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 44,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Firmware Download (HTTPS)",
+              "description": "Firmware download from S3",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "status": "Mitigated",
+                  "severity": "High",
+                  "title": "Tampering: Firmware Download",
+                  "type": "Tampering",
+                  "description": "Attacker alters firmware file during download.",
+                  "mitigation": "Verify firmware integrity with SHA-256 hash, use TLS 1.3.",
+                  "modelType": "STRIDE",
+                  "id": "firmware_tamper_2"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_firmware_download",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Firmware Download (HTTPS)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "mobile_app"
+            },
+            "target": {
+              "cell": "s3_firmware"
+            },
+            "vertices": [
+              {
+                "x": 550,
+                "y": 275
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 45,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Firmware Update (BLE)",
+              "description": "Firmware update to sensor",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": false,
+              "isEncrypted": true,
+              "isPublicNetwork": false,
+              "protocol": "BLE",
+              "threats": [
+                {
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Tampering: Firmware Update",
+                  "type": "Tampering",
+                  "description": "Attacker alters firmware during BLE transmission.",
+                  "mitigation": "Use AES-128 encryption, verify firmware with SHA-256 hash.",
+                  "modelType": "STRIDE",
+                  "id": "firmware_tamper_1"
+                }
+              ],
+              "isTrustBoundary": false
+            },
+            "id": "flow_firmware_update",
+            "labels": [
+              {
+                "position": 0.5,
+                "attrs": {
+                  "label": {
+                    "text": "Firmware Update (BLE)"
+                  }
+                }
+              }
+            ],
+            "source": {
+              "cell": "mobile_app"
+            },
+            "target": {
+              "cell": "ble_sensor"
+            },
+            "vertices": [
+              {
+                "x": -60,
+                "y": 180
+              }
+            ]
+          }
+        ],
+        "diagramTop": 0,
+        "reviewer": "Regulatory Lead",
+        "threatTop": 10
+      }
+    ]
   }
 }
