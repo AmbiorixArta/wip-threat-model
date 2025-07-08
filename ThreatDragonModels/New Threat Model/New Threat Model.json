@@ -495,7 +495,7 @@
           {
             "position": {
               "x": 430,
-              "y": 20
+              "y": -110
             },
             "size": {
               "width": 120,
@@ -618,8 +618,8 @@
           },
           {
             "position": {
-              "x": 660,
-              "y": 380
+              "x": 700,
+              "y": 660
             },
             "size": {
               "width": 120,
@@ -738,6 +738,13 @@
               "storesCredentials": false,
               "storesInventory": false,
               "threats": []
+            },
+            "tools": {
+              "items": [
+                "boundary",
+                "button-remove"
+              ],
+              "name": null
             }
           },
           {
@@ -1450,12 +1457,12 @@
             },
             "vertices": [
               {
-                "x": 410,
-                "y": 520
+                "x": 450,
+                "y": 800
               },
               {
-                "x": 460,
-                "y": 520
+                "x": 500,
+                "y": 800
               }
             ]
           },
