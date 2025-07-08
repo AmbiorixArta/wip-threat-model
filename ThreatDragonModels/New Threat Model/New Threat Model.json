@@ -19,6 +19,34 @@
         "cells": [
           {
             "position": {
+              "x": 732,
+              "y": 60
+            },
+            "size": {
+              "width": 128,
+              "height": 60
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "71b98c2c-f96a-4e7b-9a28-a3754c3ac251",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "Trust Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "tools": {
+              "items": [
+                "boundary",
+                "button-remove"
+              ],
+              "name": null
+            }
+          },
+          {
+            "position": {
               "x": 110,
               "y": 120
             },
@@ -1633,6 +1661,32 @@
               "port": "c89c18a8-4252-49c3-a40f-a6229cae56df"
             },
             "vertices": []
+          },
+          {
+            "shape": "trust-boundary-curve",
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Boundary",
+              "name": "Trust Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "labels": [
+              "Trust Boundary"
+            ],
+            "id": "3a53b2aa-587d-436f-b329-115a76829aa5",
+            "source": {
+              "x": 450,
+              "y": 40
+            },
+            "target": {
+              "x": 550,
+              "y": 140
+            }
           },
           {
             "position": {
