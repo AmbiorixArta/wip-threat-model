@@ -33,8 +33,8 @@
             },
             "visible": true,
             "shape": "trust-boundary-box",
-            "id": "6d0b5152-64ce-429a-940f-fb7acde7ce1c",
             "zIndex": -1,
+            "id": "6d0b5152-64ce-429a-940f-fb7acde7ce1c",
             "data": {
               "type": "tm.BoundaryBox",
               "name": "Patient Home Trust Boundary",
@@ -59,8 +59,8 @@
             },
             "visible": true,
             "shape": "trust-boundary-box",
-            "id": "1c64680d-4b62-4c83-952e-ad597c8f2472",
             "zIndex": -1,
+            "id": "1c64680d-4b62-4c83-952e-ad597c8f2472",
             "data": {
               "type": "tm.BoundaryBox",
               "name": "Provider clinical Trust Boundary",
@@ -85,8 +85,8 @@
             },
             "visible": true,
             "shape": "trust-boundary-box",
-            "id": "0dc2b315-88af-40d7-8aa7-86027a9a0e79",
             "zIndex": -1,
+            "id": "0dc2b315-88af-40d7-8aa7-86027a9a0e79",
             "data": {
               "type": "tm.BoundaryBox",
               "name": "Partner system Trust Boundary",
@@ -111,8 +111,8 @@
             },
             "visible": true,
             "shape": "trust-boundary-box",
-            "id": "f3953b9a-0c74-49c6-8610-60d0ecc2dd69",
             "zIndex": -1,
+            "id": "f3953b9a-0c74-49c6-8610-60d0ecc2dd69",
             "data": {
               "type": "tm.BoundaryBox",
               "name": "Arta AWS Trust Boundary",
@@ -2144,7 +2144,29 @@
               "handlesGoodsOrServices": false,
               "isWebApplication": false,
               "privilegeLevel": "",
-              "threats": []
+              "threats": [
+                {
+                  "id": "18f72000-eef6-419c-a2a7-6e6dff3cbf64",
+                  "title": "Denial of Service: API Gateway Overload",
+                  "status": "Mitigated",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "description": "Attacker overloads API Gateway with requests, disrupting API access.",
+                  "mitigation": "Integrate WAF rate limiting, and monitor with CloudWatch",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 1,
+                  "score": ""
+                }
+              ],
+              "threatFrequency": {
+                "spoofing": 0,
+                "tampering": 0,
+                "repudiation": 0,
+                "informationDisclosure": 0,
+                "denialOfService": 1,
+                "elevationOfPrivilege": 0
+              }
             }
           },
           {
@@ -3593,6 +3615,6 @@
     ],
     "diagramTop": 1,
     "reviewer": "",
-    "threatTop": 0
+    "threatTop": 1
   }
 }
