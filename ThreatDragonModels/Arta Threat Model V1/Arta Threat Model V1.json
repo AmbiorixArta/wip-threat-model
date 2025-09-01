@@ -19,6 +19,110 @@
         "cells": [
           {
             "position": {
+              "x": 159.99999999999932,
+              "y": -79.99999999999908
+            },
+            "size": {
+              "width": 390,
+              "height": 310
+            },
+            "attrs": {
+              "label": {
+                "text": "Patient Home Trust Boundary"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "6d0b5152-64ce-429a-940f-fb7acde7ce1c",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "Patient Home Trust Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 123.99999999999966,
+              "y": 310.0000000000008
+            },
+            "size": {
+              "width": 440,
+              "height": 210
+            },
+            "attrs": {
+              "label": {
+                "text": "Provider clinical Trust Boundary"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "1c64680d-4b62-4c83-952e-ad597c8f2472",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "Provider clinical Trust Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 49.99999999999969,
+              "y": 577.0000000000006
+            },
+            "size": {
+              "width": 350,
+              "height": 230
+            },
+            "attrs": {
+              "label": {
+                "text": "Partner system Trust Boundary"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "0dc2b315-88af-40d7-8aa7-86027a9a0e79",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "Partner system Trust Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 685.9999999999977,
+              "y": 50.000000000003695
+            },
+            "size": {
+              "width": 960,
+              "height": 730
+            },
+            "attrs": {
+              "label": {
+                "text": "Arta AWS Trust Boundary"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "f3953b9a-0c74-49c6-8610-60d0ecc2dd69",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "name": "Arta AWS Trust Boundary",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
               "x": 190,
               "y": 80
             },
@@ -2424,6 +2528,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 16,
             "ports": {
               "groups": {
                 "top": {
@@ -2507,7 +2612,6 @@
               ]
             },
             "id": "7236c574-b268-4ba1-8e27-b5f910d5821f",
-            "zIndex": 16,
             "data": {
               "type": "tm.Process",
               "name": "MongoDB",
@@ -2544,6 +2648,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 17,
             "ports": {
               "groups": {
                 "top": {
@@ -2627,7 +2732,6 @@
               ]
             },
             "id": "0bd52fb9-a01c-4618-96e0-962a92864992",
-            "zIndex": 17,
             "data": {
               "type": "tm.Process",
               "name": "TimescaleDB",
@@ -2664,6 +2768,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 18,
             "ports": {
               "groups": {
                 "top": {
@@ -2747,7 +2852,6 @@
               ]
             },
             "id": "aaf916a8-61ac-4ce4-a0a5-9a54ba84b5ed",
-            "zIndex": 18,
             "data": {
               "type": "tm.Process",
               "name": "Kinesis",
@@ -2784,6 +2888,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 19,
             "ports": {
               "groups": {
                 "top": {
@@ -2867,7 +2972,6 @@
               ]
             },
             "id": "60cce2c0-4f60-4af4-8686-ee776f9a7f27",
-            "zIndex": 19,
             "data": {
               "type": "tm.Process",
               "name": "Arta stream processor Lambda",
@@ -2904,6 +3008,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 20,
             "ports": {
               "groups": {
                 "top": {
@@ -2987,7 +3092,6 @@
               ]
             },
             "id": "7814eabd-27a1-4bd4-980a-bcc472882e42",
-            "zIndex": 20,
             "data": {
               "type": "tm.Process",
               "name": "Arta export server",
@@ -3024,6 +3128,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 21,
             "ports": {
               "groups": {
                 "top": {
@@ -3107,7 +3212,6 @@
               ]
             },
             "id": "f1d314e6-b6e4-4ff4-85b5-6d51f0ef1220",
-            "zIndex": 21,
             "data": {
               "type": "tm.Process",
               "name": "Arta stream server",
@@ -3144,6 +3248,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 22,
             "ports": {
               "groups": {
                 "top": {
@@ -3227,7 +3332,6 @@
               ]
             },
             "id": "284f3f79-b389-4950-80a7-9b99a72ff152",
-            "zIndex": 22,
             "data": {
               "type": "tm.Process",
               "name": "SQS",
@@ -3264,6 +3368,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 23,
             "ports": {
               "groups": {
                 "top": {
@@ -3347,7 +3452,6 @@
               ]
             },
             "id": "627200ea-a5a3-4757-80c5-759ff799badc",
-            "zIndex": 23,
             "data": {
               "type": "tm.Process",
               "name": "S3",
@@ -3384,6 +3488,7 @@
             },
             "visible": true,
             "shape": "process",
+            "zIndex": 24,
             "ports": {
               "groups": {
                 "top": {
@@ -3467,7 +3572,6 @@
               ]
             },
             "id": "78aea364-e963-4789-b95b-c4e3c1c96be2",
-            "zIndex": 24,
             "data": {
               "type": "tm.Process",
               "name": "Elasticache redis",
